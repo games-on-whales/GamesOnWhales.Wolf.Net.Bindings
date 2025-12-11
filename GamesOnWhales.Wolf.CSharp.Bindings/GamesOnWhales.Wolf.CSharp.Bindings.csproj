@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <IsPackable>true</IsPackable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <RootNamespace>GamesOnWhales</RootNamespace>
+        <PackageId>GamesOnWhales.Wolf.CSharp.Bindings</PackageId>
+        <!--<PackageTags></PackageTags>-->
+        <Authors>Sebastian Sommer</Authors>
+        <RepositoryUrl>https://github.com/games-on-whales/GamesOnWhales.Wolf.Net.Bindings</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\OpenApiSourceGenerator\OpenApiSourceGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" ReferenceOutputAssembly="false" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
+    </ItemGroup>
+    
+    
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+       
+    </ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
+
+    </ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageReference Include="System.Threading.RateLimiting" Version="10.0.0" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <!-- Update the property to include all EmbeddedResource files -->
+        <AdditionalFileItemNames>$(AdditionalFileItemNames);EmbeddedResource</AdditionalFileItemNames>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--  <AdditionalFiles Include="*/*/*.tscn" /> -->
+        <EmbeddedResource Include="WolfApi.json" />
+        <!--  <EmbeddedResource Include="Docker_old.json" /> -->
+        <EmbeddedResource Include="Docker.json" />
+
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+</Project>

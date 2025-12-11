@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "DebugRoslynSourceGenerator": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "../GamesOnWhales.Wolf.CSharp.Bindings/GamesOnWhales.Wolf.CSharp.Bindings.csproj"
+    }
+  }
+}

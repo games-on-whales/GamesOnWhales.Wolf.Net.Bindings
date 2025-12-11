@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenApiSourceGenerator", "OpenApiSourceGenerator\OpenApiSourceGenerator.csproj", "{07561698-5F2E-4256-9CEC-286D9A0B96EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamesOnWhales.Wolf.CSharp.Bindings", "GamesOnWhales.Wolf.CSharp.Bindings\GamesOnWhales.Wolf.CSharp.Bindings.csproj", "{DF29D3CA-F662-4AC6-97A8-833E55F07D15}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07561698-5F2E-4256-9CEC-286D9A0B96EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07561698-5F2E-4256-9CEC-286D9A0B96EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07561698-5F2E-4256-9CEC-286D9A0B96EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07561698-5F2E-4256-9CEC-286D9A0B96EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF29D3CA-F662-4AC6-97A8-833E55F07D15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF29D3CA-F662-4AC6-97A8-833E55F07D15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF29D3CA-F662-4AC6-97A8-833E55F07D15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF29D3CA-F662-4AC6-97A8-833E55F07D15}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
