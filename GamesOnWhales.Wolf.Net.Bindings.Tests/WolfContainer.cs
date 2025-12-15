@@ -34,7 +34,7 @@ public class WolfContainer : IAsyncLifetime
                 {"UNAME", Environment.UserName}
             })
             .WithBindMount(path, "/etc/wolf")
-            .WithBindMount("/var/run/docker.sock.raw", "/var/run/docker.sock", AccessMode.ReadWrite)
+            //.WithBindMount("/var/run/docker.sock", "/var/run/docker.sock", AccessMode.ReadWrite)
             // Build the container configuration.
             .Build();
         
