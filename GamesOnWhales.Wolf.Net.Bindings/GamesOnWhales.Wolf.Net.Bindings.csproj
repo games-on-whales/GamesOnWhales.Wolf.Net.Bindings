@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
 
         <RootNamespace>GamesOnWhales</RootNamespace>
-        <PackageId>GamesOnWhales.Wolf.CSharp.Bindings</PackageId>
+        <PackageId>GamesOnWhales.Wolf.Net.Bindings</PackageId>
         <!--<PackageTags></PackageTags>-->
         <Authors>Sebastian Sommer</Authors>
         <RepositoryUrl>https://github.com/games-on-whales/GamesOnWhales.Wolf.Net.Bindings</RepositoryUrl>

@@ -10,12 +10,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Components;
 
-public partial class WolfApi : IHostedService
+public partial class WolfApi : IHostedService, IWolfApi
 {
-    public NSwagDocker.NSwagDocker DockerApi { get; }
+    public NSwagDocker.NSwagDocker GeneratedDockerApiBindings { get; }
     public NSwagWolfApi.NSwagWolfApi GeneratedApiBindings { get; }
-    public string SocketPath { get; set; } = "/etc/wolf/cfg/wolf.sock";
-    public string BaseUrl { get; set; } = "http://localhost/";
+    public GeneratedApiClient GeneratedApiClient { get; }
+    private string SocketPath { get; set; } = "/etc/wolf/cfg/wolf.sock";
+    private string BaseUrl { get; set; } = "http://localhost/";
     
     private readonly ILogger<WolfApi> _logger;
     private readonly HttpClient _httpClient;
@@ -83,10 +84,19 @@ public partial class WolfApi : IHostedService
             );
         }
         
-        DockerApi = new(_httpClient);
-        DockerApi.BaseUrl = BaseUrl;
-        GeneratedApiBindings = new(_httpClient);
-        GeneratedApiBindings.BaseUrl = BaseUrl;
+        GeneratedDockerApiBindings = new NSwagDocker.NSwagDocker(_httpClient)
+        {
+            BaseUrl = BaseUrl
+        };
+        GeneratedApiBindings = new NSwagWolfApi.NSwagWolfApi(_httpClient)
+        {
+            BaseUrl = BaseUrl
+        };
+        GeneratedApiClient = new GeneratedApiClient(_httpClient)
+        {
+            BaseUrl = BaseUrl
+        };
+        
         _logger = logger;
     }
     

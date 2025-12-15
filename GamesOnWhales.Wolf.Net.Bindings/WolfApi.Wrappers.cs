@@ -9,7 +9,7 @@ public partial class WolfApi
         => (await GeneratedApiBindings.ClientsAsync()).Clients ?? Array.Empty<NSwagWolfApi.PairedClient>();
 
     public async Task<NSwagDocker.ImageInspect> GetDockerImagesInspectAsync(string imageName)
-        => await DockerApi.ImageInspectAsync(imageName);
+        => await GeneratedDockerApiBindings.ImageInspectAsync(imageName);
     
     public async Task<ICollection<NSwagWolfApi.Lobby>> GetLobbiesAsync() 
         => (await GeneratedApiBindings.LobbiesAsync()).Lobbies ?? Array.Empty<NSwagWolfApi.Lobby>();

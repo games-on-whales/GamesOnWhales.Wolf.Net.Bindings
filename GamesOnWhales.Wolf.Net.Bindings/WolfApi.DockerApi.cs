@@ -19,7 +19,7 @@ public partial class WolfApi
             .Distinct()
             .Select(image => (
                 image,
-                TryAsync(DockerApi.ImageInspectAsync(image)).Result is not null)
+                TryAsync(GeneratedDockerApiBindings.ImageInspectAsync(image)).Result is not null)
             );
 
         var dict = new ConcurrentDictionary<string, bool>();
