@@ -1,109 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
-using DotNet.Testcontainers.Images;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
 using Xunit.Abstractions;
 
 namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 
-public class ContainerFixture : IAsyncLifetime
+public class IntegrationTest(ITestOutputHelper testOutputHelper, WolfContainer container) : IAsyncLifetime, IClassFixture<WolfContainer>
 {
-    private IContainer TestContainer { get; set; } = null!;
-
-    private (string uid, string gid) GetUserIDs()
-    {
-        var uid = "";
-        var gid = "";
-        
-        var uidProc = new Process 
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "/usr/bin/id",
-                Arguments = $"-u {Environment.UserName}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            }
-        };
-        
-        uidProc.Start();
-        while (!uidProc.StandardOutput.EndOfStream)
-        {
-            var line = uidProc.StandardOutput.ReadLine();
-            if(line is not null)
-                uid = line;
-            // do something with line
-        }
-        
-        var gidProc = new Process 
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "/usr/bin/id",
-                Arguments = $"-g {Environment.UserName}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            }
-        };
-        
-        gidProc.Start();
-        while (!gidProc.StandardOutput.EndOfStream)
-        {
-            var line = gidProc.StandardOutput.ReadLine();
-            if(line is not null)
-                gid = line;
-            // do something with line
-        }
-        
-        return (uid, gid);
-    }
-    
-    public async Task InitializeAsync()
-    {
-        var tmpFolder = Path.GetTempPath();
-        var path = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
-        
-        if(!Directory.Exists(Path.Join(path, "cfg")))
-            Directory.CreateDirectory(path);
-        
-        var ids = GetUserIDs();
-        
-        // Create a new instance of a container.
-        TestContainer = new ContainerBuilder()
-            .WithImage("ghcr.io/games-on-whales/wolf:stable")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*HTTPS server listening on port.*"))
-            .WithEnvironment(new Dictionary<string, string>
-            {
-                {"WOLF_SOCKET_PATH","/etc/wolf/cfg/wolf.sock"},
-                {"WOLF_LOG_LEVEL", "DEBUG"},
-                {"PUID", ids.uid},
-                {"PGID", ids.gid},
-                {"UNAME", Environment.UserName}
-            })
-            .WithBindMount(path, "/etc/wolf")
-            //.WithBindMount("/var/run/docker.sock", "/var/run/docker.sock")
-            // Build the container configuration.
-            .Build();
-        
-        await TestContainer.StartAsync();
-        // await TestContainer.ExecAsync(["echo", path]);
-        // await TestContainer.ExecAsync(["chown", "-R", Environment.UserName, "/etc/wolf"]);
-    }
-    
-    public async Task DisposeAsync()
-    {
-        await TestContainer.StopAsync();
-    }
-}
-public class IntegrationTest(ITestOutputHelper testOutputHelper, ContainerFixture containerFixture) : IAsyncLifetime, IClassFixture<ContainerFixture>
-{
-    //private ContainerFixture TestContainerFixture { get; set; } = null!;
     private WolfApi Api { get; set; } = null!;
     
     [Fact]
@@ -117,14 +18,14 @@ public class IntegrationTest(ITestOutputHelper testOutputHelper, ContainerFixtur
     
     // Sadly mounting the docker socket wont allow the wolf container to run anymore, reason still unkown
     // TODO: Fix mounting docker socket allowing for tests that rely on docker access...
-    // [Fact]
-    // public async Task TestDockerInspect()
-    // {
-    //     var response = await Api.GetDockerImagesInspectAsync("ghcr.io/games-on-whales/wolf:stable");
-    //     testOutputHelper.WriteLine(response.ToString());
-    // }
+    [Fact]
+    public async Task TestDockerInspect()
+    {
+         var response = await Api.GetDockerImagesInspectAsync("ghcr.io/games-on-whales/wolf:stable");
+         testOutputHelper.WriteLine(response.ToString());
+    }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
         var tmpFolder = Path.GetTempPath();
         var path = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
@@ -134,6 +35,8 @@ public class IntegrationTest(ITestOutputHelper testOutputHelper, ContainerFixtur
             {
                 {"SOCKET_PATH", Path.Join(path, "cfg/wolf.sock")}
             }!).Build());
+        
+        return Task.CompletedTask;
     }
     
     public Task DisposeAsync()
