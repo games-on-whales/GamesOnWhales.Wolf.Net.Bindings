@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
@@ -12,15 +13,66 @@ namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 public class ContainerFixture : IAsyncLifetime
 {
     private IContainer TestContainer { get; set; } = null!;
+
+    private (string uid, string gid) GetUserIDs()
+    {
+        var uid = "";
+        var gid = "";
+        
+        var uidProc = new Process 
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "/usr/bin/id",
+                Arguments = $"-u {Environment.UserName}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            }
+        };
+        
+        uidProc.Start();
+        while (!uidProc.StandardOutput.EndOfStream)
+        {
+            var line = uidProc.StandardOutput.ReadLine();
+            if(line is not null)
+                uid = line;
+            // do something with line
+        }
+        
+        var gidProc = new Process 
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "/usr/bin/id",
+                Arguments = $"-g {Environment.UserName}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            }
+        };
+        
+        gidProc.Start();
+        while (!gidProc.StandardOutput.EndOfStream)
+        {
+            var line = gidProc.StandardOutput.ReadLine();
+            if(line is not null)
+                gid = line;
+            // do something with line
+        }
+        
+        return (uid, gid);
+    }
+    
     public async Task InitializeAsync()
     {
         var tmpFolder = Path.GetTempPath();
         var path = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
         
-        if(Directory.Exists(Path.Join(path, "cfg")))
-            Directory.Delete(Path.Join(path, "cfg"), true);
-            
-        Directory.CreateDirectory(path);
+        if(!Directory.Exists(Path.Join(path, "cfg")))
+            Directory.CreateDirectory(path);
+        
+        var ids = GetUserIDs();
         
         // Create a new instance of a container.
         TestContainer = new ContainerBuilder()
@@ -29,7 +81,10 @@ public class ContainerFixture : IAsyncLifetime
             .WithEnvironment(new Dictionary<string, string>
             {
                 {"WOLF_SOCKET_PATH","/etc/wolf/cfg/wolf.sock"},
-                {"WOLF_LOG_LEVEL", "DEBUG"}
+                {"WOLF_LOG_LEVEL", "DEBUG"},
+                {"PUID", ids.uid},
+                {"PGID", ids.gid},
+                {"UNAME", Environment.UserName}
             })
             .WithBindMount(path, "/etc/wolf")
             //.WithBindMount("/var/run/docker.sock", "/var/run/docker.sock")
@@ -37,7 +92,8 @@ public class ContainerFixture : IAsyncLifetime
             .Build();
         
         await TestContainer.StartAsync();
-        await TestContainer.ExecAsync(["chown", "-R", "1000:1000", "/etc/wolf"]);
+        // await TestContainer.ExecAsync(["echo", path]);
+        // await TestContainer.ExecAsync(["chown", "-R", Environment.UserName, "/etc/wolf"]);
     }
     
     public async Task DisposeAsync()
@@ -55,9 +111,7 @@ public class IntegrationTest(ITestOutputHelper testOutputHelper, ContainerFixtur
     {
         var response = await Api.GetProfiles();
         Assert.Contains(response, profile => profile.Name == "User");
-
         var resp = await Api.GeneratedApiClient.ProfilesAsync();
-        
         Assert.Contains(resp.Profiles, profile => profile.Name == "User");
     }
     
