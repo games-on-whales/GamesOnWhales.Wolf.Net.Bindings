@@ -13,13 +13,13 @@ public partial class WolfApi
     
     private ConcurrentDictionary<string, bool> RequestStatusOfDockerImages()
     {
-        var profiles = TryAsync(GeneratedApiBindings.ProfilesAsync()).Result?.Profiles ?? [];
+        var profiles = TryAsync(GeneratedClient.ProfilesAsync()).Result?.Profiles ?? [];
         var tuples = profiles.SelectMany(p => p.Apps)
             .Select(a => a.Runner.Image)
             .Distinct()
             .Select(image => (
                 image,
-                TryAsync(GeneratedDockerApiBindings.ImageInspectAsync(image)).Result is not null)
+                TryAsync(GeneratedClient.ImageInspectAsync(image)).Result is not null)
             );
 
         var dict = new ConcurrentDictionary<string, bool>();

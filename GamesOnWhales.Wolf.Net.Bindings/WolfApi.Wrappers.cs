@@ -2,86 +2,86 @@ namespace GamesOnWhales;
 
 public partial class WolfApi
 {
-    public async Task<ICollection<NSwagWolfApi.App>> GetAppsAsync() 
-        => (await GeneratedApiBindings.AppsAsync()).Apps ?? Array.Empty<NSwagWolfApi.App>();
+    public async Task<ICollection<App>> GetAppsAsync() 
+        => (await GeneratedClient.AppsAsync()).Apps ?? Array.Empty<App>();
     
-    public async Task<ICollection<NSwagWolfApi.PairedClient>> GetClientsAsync() 
-        => (await GeneratedApiBindings.ClientsAsync()).Clients ?? Array.Empty<NSwagWolfApi.PairedClient>();
+    public async Task<ICollection<PairedClient>> GetClientsAsync() 
+        => (await GeneratedClient.ClientsAsync()).Clients ?? Array.Empty<PairedClient>();
 
-    public async Task<NSwagDocker.ImageInspect> GetDockerImagesInspectAsync(string imageName)
-        => await GeneratedDockerApiBindings.ImageInspectAsync(imageName);
+    public async Task<ImageInspect> GetDockerImagesInspectAsync(string imageName)
+        => await GeneratedClient.ImageInspectAsync(imageName);
     
-    public async Task<ICollection<NSwagWolfApi.Lobby>> GetLobbiesAsync() 
-        => (await GeneratedApiBindings.LobbiesAsync()).Lobbies ?? Array.Empty<NSwagWolfApi.Lobby>();
+    public async Task<ICollection<Lobby>> GetLobbiesAsync() 
+        => (await GeneratedClient.LobbiesAsync()).Lobbies ?? Array.Empty<Lobby>();
     
-    public async Task<ICollection<NSwagWolfApi.PendingPairClient>> GetPendingPairRequestsAsync() 
-        => (await GeneratedApiBindings.PendingAsync()).Requests ?? Array.Empty<NSwagWolfApi.PendingPairClient>();
+    public async Task<ICollection<PendingPairClient>> GetPendingPairRequestsAsync() 
+        => (await GeneratedClient.PendingAsync()).Requests ?? Array.Empty<PendingPairClient>();
     
-    public async Task<ICollection<NSwagWolfApi.Profile>> GetProfilesAsync() 
-        => (await GeneratedApiBindings.ProfilesAsync()).Profiles ?? Array.Empty<NSwagWolfApi.Profile>();
+    public async Task<ICollection<Profile>> GetProfilesAsync() 
+        => (await GeneratedClient.ProfilesAsync()).Profiles ?? Array.Empty<Profile>();
     
-    public async Task<ICollection<NSwagWolfApi.StreamSession>> GetSessionsAsync()
-        => (await GeneratedApiBindings.SessionsAsync()).Sessions ?? Array.Empty<NSwagWolfApi.StreamSession>();
+    public async Task<ICollection<StreamSession>> GetSessionsAsync()
+        => (await GeneratedClient.SessionsAsync()).Sessions ?? Array.Empty<StreamSession>();
 
     public async Task<Stream?> GetUtilsGetIconAsync(string iconPath)
         => await GetIcon(iconPath);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostAppsAddAsync(NSwagWolfApi.App app)
-        => await GeneratedApiBindings.AddAsync(app);
+    public async Task<GenericSuccessResponse> PostAppsAddAsync(App app)
+        => await GeneratedClient.AddAsync(app);
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostAppsDeleteAsync(NSwagWolfApi.App app)
-        => await GeneratedApiBindings.DeleteAsync(new NSwagWolfApi.AppDeleteRequest(){Id = app.Id});
+    public async Task<GenericSuccessResponse> PostAppsDeleteAsync(App app)
+        => await GeneratedClient.DeleteAsync(new AppDeleteRequest(){Id = app.Id});
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostAppsDeleteAsync(string appId)
-        => await GeneratedApiBindings.DeleteAsync(new NSwagWolfApi.AppDeleteRequest(){Id = appId});
+    public async Task<GenericSuccessResponse> PostAppsDeleteAsync(string appId)
+        => await GeneratedClient.DeleteAsync(new AppDeleteRequest(){Id = appId});
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostClientSettingsAsync(
-        NSwagWolfApi.UpdateClientSettingsRequest clientSettings)
-        => await GeneratedApiBindings.SettingsAsync(clientSettings);
+    public async Task<GenericSuccessResponse> PostClientSettingsAsync(
+        UpdateClientSettingsRequest clientSettings)
+        => await GeneratedClient.SettingsAsync(clientSettings);
 
     public async Task PostDockerImagesPullAsync(string imageName)
         => PullImage(imageName);
     
-    public async Task<NSwagWolfApi.LobbyCreateResponse> PostLobbiesCreate(NSwagWolfApi.CreateLobbyRequest lobby)
-        => await GeneratedApiBindings.CreateAsync(lobby);
+    public async Task<LobbyCreateResponse> PostLobbiesCreate(CreateLobbyRequest lobby)
+        => await GeneratedClient.CreateAsync(lobby);
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostLobbiesJoinAsync(NSwagWolfApi.JoinLobbyEvent lobby)
-        => await GeneratedApiBindings.JoinAsync(lobby);
+    public async Task<GenericSuccessResponse> PostLobbiesJoinAsync(JoinLobbyEvent lobby)
+        => await GeneratedClient.JoinAsync(lobby);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostLobbiesLeaveAsync(NSwagWolfApi.LeaveLobbyEvent lobby)
-        => await GeneratedApiBindings.LeaveAsync(lobby);
+    public async Task<GenericSuccessResponse> PostLobbiesLeaveAsync(LeaveLobbyEvent lobby)
+        => await GeneratedClient.LeaveAsync(lobby);
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostLobbiesStopAsync(NSwagWolfApi.StopLobbyEvent lobby)
-        => await GeneratedApiBindings.StopAsync(lobby);
+    public async Task<GenericSuccessResponse> PostLobbiesStopAsync(StopLobbyEvent lobby)
+        => await GeneratedClient.StopAsync(lobby);
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostPairClientAsync(NSwagWolfApi.PairRequest pair)
-        => await GeneratedApiBindings.ClientAsync(pair);
+    public async Task<GenericSuccessResponse> PostPairClientAsync(PairRequest pair)
+        => await GeneratedClient.ClientAsync(pair);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostProfilesAddAsync(NSwagWolfApi.Profile profile)
-        => await GeneratedApiBindings.Add2Async(profile);
+    public async Task<GenericSuccessResponse> PostProfilesAddAsync(Profile profile)
+        => await GeneratedClient.Add2Async(profile);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostProfilesRemoveAsync(NSwagWolfApi.ProfileRemoveRequest profile)
-        => await GeneratedApiBindings.RemoveAsync(profile);
+    public async Task<GenericSuccessResponse> PostProfilesRemoveAsync(ProfileRemoveRequest profile)
+        => await GeneratedClient.RemoveAsync(profile);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostRunnerStartAsync(NSwagWolfApi.RunnerStartRequest runner)
-        => await GeneratedApiBindings.StartAsync(runner);
+    public async Task<GenericSuccessResponse> PostRunnerStartAsync(RunnerStartRequest runner)
+        => await GeneratedClient.StartAsync(runner);
     
-    public async Task<NSwagWolfApi.StreamSessionCreated> PostSessionsAddAsync(NSwagWolfApi.StreamSession session)
-        => await GeneratedApiBindings.Add3Async(session);
+    public async Task<StreamSessionCreated> PostSessionsAddAsync(StreamSession session)
+        => await GeneratedClient.Add3Async(session);
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostSessionsInputAsync(
-        NSwagWolfApi.StreamSessionHandleInputRequest input)
-        => await GeneratedApiBindings.InputAsync(input);
+    public async Task<GenericSuccessResponse> PostSessionsInputAsync(
+        StreamSessionHandleInputRequest input)
+        => await GeneratedClient.InputAsync(input);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostSessionsPauseAsync(NSwagWolfApi.StreamSessionPauseRequest session)
-        => await GeneratedApiBindings.PauseAsync(session);
+    public async Task<GenericSuccessResponse> PostSessionsPauseAsync(StreamSessionPauseRequest session)
+        => await GeneratedClient.PauseAsync(session);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostSessionsStartAsync(NSwagWolfApi.StreamSessionStartRequest session)
-        => await GeneratedApiBindings.Start2Async(session);
+    public async Task<GenericSuccessResponse> PostSessionsStartAsync(StreamSessionStartRequest session)
+        => await GeneratedClient.Start2Async(session);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostSessionsStopAsync(NSwagWolfApi.StreamSessionStopRequest session)
-        => await GeneratedApiBindings.Stop2Async(session);
+    public async Task<GenericSuccessResponse> PostSessionsStopAsync(StreamSessionStopRequest session)
+        => await GeneratedClient.Stop2Async(session);
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> PostUnpairClientAsync(NSwagWolfApi.UnpairClientRequest unpair)
-        => await GeneratedApiBindings.Client2Async(unpair);
+    public async Task<GenericSuccessResponse> PostUnpairClientAsync(UnpairClientRequest unpair)
+        => await GeneratedClient.Client2Async(unpair);
 }

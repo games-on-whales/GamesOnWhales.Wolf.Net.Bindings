@@ -12,16 +12,14 @@ using Components;
 
 public partial class WolfApi : IHostedService, IWolfApi
 {
-    public NSwagDocker.NSwagDocker GeneratedDockerApiBindings { get; }
-    public NSwagWolfApi.NSwagWolfApi GeneratedApiBindings { get; }
-    public GeneratedApiClient GeneratedApiClient { get; }
+    public GeneratedApiClient GeneratedClient { get; }
     private string SocketPath { get; set; } = "/etc/wolf/cfg/wolf.sock";
     private string BaseUrl { get; set; } = "http://localhost/";
     
     private readonly ILogger<WolfApi> _logger;
     private readonly HttpClient _httpClient;
     
-    public ConcurrentQueue<NSwagWolfApi.Profile>? Profiles { get; private set; }
+    public ConcurrentQueue<Profile>? Profiles { get; private set; }
 
     public WolfApi() : this(NullLogger<WolfApi>.Instance) { }
     
@@ -84,15 +82,7 @@ public partial class WolfApi : IHostedService, IWolfApi
             );
         }
         
-        GeneratedDockerApiBindings = new NSwagDocker.NSwagDocker(_httpClient)
-        {
-            BaseUrl = BaseUrl
-        };
-        GeneratedApiBindings = new NSwagWolfApi.NSwagWolfApi(_httpClient)
-        {
-            BaseUrl = BaseUrl
-        };
-        GeneratedApiClient = new GeneratedApiClient(_httpClient)
+        GeneratedClient = new GeneratedApiClient(_httpClient)
         {
             BaseUrl = BaseUrl
         };
@@ -103,7 +93,7 @@ public partial class WolfApi : IHostedService, IWolfApi
     [MemberNotNull(nameof(Profiles))]
     public async Task UpdateProfiles()
     {
-        Profiles = new ConcurrentQueue<NSwagWolfApi.Profile>();
+        Profiles = new ConcurrentQueue<Profile>();
         var profiles = await GetProfiles();
         foreach (var profile in profiles)
         {
@@ -112,19 +102,19 @@ public partial class WolfApi : IHostedService, IWolfApi
         await OnProfilesUpdatedEvent(profiles);
     }
     
-    public async Task<NSwagWolfApi.GenericSuccessResponse> AddProfile(NSwagWolfApi.Profile profile)
+    public async Task<GenericSuccessResponse> AddProfile(Profile profile)
     {
-        var val = await GeneratedApiBindings.Add2Async(profile);
+        var val = await GeneratedClient.Add2Async(profile);
         await UpdateProfiles();
         return val;
     }
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> DeleteProfile(NSwagWolfApi.Profile profile)
+    public async Task<GenericSuccessResponse> DeleteProfile(Profile profile)
         => await DeleteProfile(profile.Id);
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> DeleteProfile(string id)
+    public async Task<GenericSuccessResponse> DeleteProfile(string id)
     {
-        var val = await GeneratedApiBindings.RemoveAsync(new NSwagWolfApi.ProfileRemoveRequest()
+        var val = await GeneratedClient.RemoveAsync(new ProfileRemoveRequest()
         {
             Id = id
         });
@@ -132,26 +122,26 @@ public partial class WolfApi : IHostedService, IWolfApi
         return val;
     }
 
-    public async Task<NSwagWolfApi.GenericSuccessResponse> UpdateProfile(string id, NSwagWolfApi.Profile profile)
+    public async Task<GenericSuccessResponse> UpdateProfile(string id, Profile profile)
     {
         if(id != profile.Id) throw new ArgumentException("id must be equal to profile id", nameof(id));
-        var del = await GeneratedApiBindings.RemoveAsync(new NSwagWolfApi.ProfileRemoveRequest()
+        var del = await GeneratedClient.RemoveAsync(new ProfileRemoveRequest()
         {
             Id = id
         });
         if (!del.Success) return del;
-        var add = await GeneratedApiBindings.Add2Async(profile);
+        var add = await GeneratedClient.Add2Async(profile);
         // Todo: If Delete Succeeds and Add Fails, Try rescue Profile by some means, or wait for a Dedicated Update endpoint.
         await UpdateProfiles();
         return add;
     }
 
-    public async Task<ICollection<NSwagWolfApi.Profile>> GetProfiles() =>
-        (await GeneratedApiBindings.ProfilesAsync()).Profiles ?? Array.Empty<NSwagWolfApi.Profile>();
+    public async Task<ICollection<Profile>> GetProfiles() =>
+        (await GeneratedClient.ProfilesAsync()).Profiles ?? Array.Empty<Profile>();
 
     //public event IApiEventPublisher.ProfilesUpdatedEventHandler? ProfilesUpdatedEvent;
 
-    protected virtual Task OnProfilesUpdatedEvent(ICollection<NSwagWolfApi.Profile> profiles)
+    protected virtual Task OnProfilesUpdatedEvent(ICollection<Profile> profiles)
     {
         return Task.CompletedTask;
     }

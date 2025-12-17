@@ -2,7 +2,6 @@ namespace GamesOnWhales;
 
 using System.Net;
 using Microsoft.Extensions.Logging;
-using NSwagWolfApi;
 
 public partial class WolfApi
 {

@@ -22,8 +22,8 @@ public class SourceGeneratorWithAdditionalFiles : IIncrementalGenerator
 
         var compilationAndFiles = context.CompilationProvider.Combine(files);
         
-        context.RegisterSourceOutput(compilationAndFiles,
-            (productionContext, sourceContext) => GenerateCode(productionContext, sourceContext.Left, sourceContext.Right));
+        //context.RegisterSourceOutput(compilationAndFiles,
+        //    (productionContext, sourceContext) => GenerateCode(productionContext, sourceContext.Left, sourceContext.Right));
         
         context.RegisterSourceOutput(files, GenerateCode); 
     }
