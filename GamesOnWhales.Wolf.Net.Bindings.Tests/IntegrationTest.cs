@@ -84,8 +84,7 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
         };
 
         var outs = _container.TestContainer.GetLogsAsync().GetAwaiter().GetResult();
-        
-        outs.Stdout.Split("\n").ToList().ForEach(line => _output.WriteLine($"[WolfContainer] {line}"));
+        outs.Stderr.Split("\n").ToList().ForEach(line => _output.WriteLine($"[WolfContainer] {line}"));
         
         var tmpFolder = Path.GetTempPath();
         var path = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");

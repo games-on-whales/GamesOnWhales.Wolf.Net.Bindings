@@ -58,7 +58,6 @@ public class WolfContainer : IAsyncLifetime
                 {"UNAME", Environment.UserName}
             })
             .WithBindMount(path, "/etc/wolf")
-            .WithLogger(logger)
             .WithBindMount("/var/run/docker.sock", "/var/run/docker.sock", AccessMode.ReadWrite)
             //Todo: add .WithOutputConsumer() for even cleaner Logs
             .WithResourceMapping(fileBuffer , "/etc/wolf/test.png", uint.Parse(ids.uid), uint.Parse(ids.gid))
