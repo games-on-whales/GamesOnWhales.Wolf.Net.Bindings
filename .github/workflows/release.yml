@@ -9,7 +9,6 @@ on:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 15
     permissions:
       id-token: write  # enable GitHub OIDC token issuance for this job
@@ -44,4 +43,4 @@ jobs:
       
       # Push the package
       - name: NuGet push
-        run: dotnet nuget push Skerga.Godot.DependencyInjection.${VERSION}.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push GamesOnWhales.Wolf.Net.Bindings.${VERSION}.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
