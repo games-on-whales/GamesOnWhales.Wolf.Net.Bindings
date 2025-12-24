@@ -1,6 +1,8 @@
+using Microsoft.Extensions.Hosting;
+
 namespace GamesOnWhales;
 
-public interface IWolfApi
+public interface IWolfApi : IHostedService
 {
     GeneratedApiClient GeneratedClient { get; }
     
