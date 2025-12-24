@@ -8,9 +8,6 @@ namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 
 public sealed class IntegrationTest : IClassFixture<WolfContainer>
 {
-    private readonly WolfContainer _container;
-    private readonly ITestOutputHelper _output;
-    private FakeLogCollector LogCollector { get; set; }
     private WolfApi Api { get; }
     
     [Fact]
@@ -38,7 +35,7 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
         await resource.CopyToAsync(ms1);
         await imgStream.CopyToAsync(ms2);
         
-        Assert.Equivalent(ms1.ToArray(), ms2.ToArray());
+        Assert.Equivalent(ms1.ToArray(), ms2.ToArray(), strict: true);
     }
     
     // Sadly mounting the docker socket wont allow the wolf container to run anymore, reason still unkown
@@ -50,6 +47,13 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
     //     testOutputHelper.WriteLine(response.ToString());
     //}
 
+    #region SetupTestEnvironment
+    // Lifetime of the Container should be the same as the Classes Object.
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+    private readonly WolfContainer _container;
+    // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+    private readonly ITestOutputHelper _output;
+    private FakeLogCollector LogCollector { get; set; }
     public IntegrationTest(ITestOutputHelper testOutputHelper, WolfContainer container)
     {
         _container = container;
@@ -95,4 +99,5 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
                 {"SOCKET_PATH", Path.Join(path, "cfg/wolf.sock")}
             }!).Build());
     }
+    #endregion
 }
