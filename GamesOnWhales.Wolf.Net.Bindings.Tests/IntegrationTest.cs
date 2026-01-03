@@ -96,7 +96,7 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
         Api = new WolfApi(new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                {"SOCKET_PATH", Path.Join(path, "cfg/wolf.sock")}
+                {"SOCKET_PATH", $"unix://{Path.Join(path, "cfg/wolf.sock")}"}
             }!).Build());
     }
     #endregion

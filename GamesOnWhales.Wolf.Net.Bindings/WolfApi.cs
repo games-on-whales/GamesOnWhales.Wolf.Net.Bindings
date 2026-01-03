@@ -13,7 +13,7 @@ using Components;
 public partial class WolfApi : IHostedService, IWolfApi
 {
     public GeneratedApiClient GeneratedClient { get; }
-    private string SocketPath { get; set; } = "/etc/wolf/cfg/wolf.sock";
+    private string SocketPath { get; set; } = "unix:///etc/wolf/cfg/wolf.sock";
     private string BaseUrl { get; set; } = "http://localhost/";
     
     private readonly ILogger<WolfApi> _logger;
@@ -28,7 +28,7 @@ public partial class WolfApi : IHostedService, IWolfApi
             new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string>
             {
-                {"SOCKET_PATH", "/etc/wolf/cfg/wolf.sock"}
+                {"SOCKET_PATH", "unix:///etc/wolf/cfg/wolf.sock"}
             }!).Build())
     { }
     
@@ -49,8 +49,9 @@ public partial class WolfApi : IHostedService, IWolfApi
             AutoReplenishment = true
         };
         
-        if (!string.IsNullOrEmpty(socketPath))
+        if (socketPath.StartsWith("unix://"))
         {
+            socketPath = socketPath["unix://".Length..];
             _httpClient = new HttpClient(
                 handler: new ClientSideRateLimitedHandler(
                     limiter: new TokenBucketRateLimiter(options),
@@ -62,7 +63,7 @@ public partial class WolfApi : IHostedService, IWolfApi
                             {
                                 throw new FileNotFoundException(socketPath);
                             }
-
+                            
                             var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
                             var endpoint = new UnixDomainSocketEndPoint(socketPath);
                             await socket.ConnectAsync(endpoint, token);
