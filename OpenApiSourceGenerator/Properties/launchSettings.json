@@ -3,7 +3,7 @@
   "profiles": {
     "DebugRoslynSourceGenerator": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../GamesOnWhales.Wolf.CSharp.Bindings/GamesOnWhales.Wolf.CSharp.Bindings.csproj"
+      "targetProject": "../GamesOnWhales.Wolf.Net.Bindings.Sample/GamesOnWhales.Wolf.Net.Bindings.Sample.csproj"
     }
   }
 }
