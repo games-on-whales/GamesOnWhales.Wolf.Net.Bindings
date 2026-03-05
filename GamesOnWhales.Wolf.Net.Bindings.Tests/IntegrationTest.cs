@@ -1,8 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Testing;
-using Org.BouncyCastle.Asn1.Anssi;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 
@@ -15,7 +14,7 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
     {
         var response = await Api.GetProfiles();
         Assert.Contains(response, profile => profile.Name == "User");
-        var resp = await Api.GeneratedClient.ProfilesAsync();
+        var resp = await Api.GeneratedClient.ProfilesAsync(TestContext.Current.CancellationToken);
         Assert.Contains(resp.Profiles, profile => profile.Name == "User");
     }
 
@@ -32,8 +31,8 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
 
         var ms1 = new MemoryStream();
         var ms2 = new MemoryStream();
-        await resource.CopyToAsync(ms1);
-        await imgStream.CopyToAsync(ms2);
+        await resource.CopyToAsync(ms1, TestContext.Current.CancellationToken);
+        await imgStream.CopyToAsync(ms2, TestContext.Current.CancellationToken);
         
         Assert.Equivalent(ms1.ToArray(), ms2.ToArray(), strict: true);
     }
