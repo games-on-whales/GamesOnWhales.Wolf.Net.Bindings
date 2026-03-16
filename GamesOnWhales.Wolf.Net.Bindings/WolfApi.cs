@@ -19,23 +19,21 @@ public partial class WolfApi : IHostedService, IWolfApi
     private readonly ILogger<WolfApi> _logger;
     private readonly HttpClient _httpClient;
     
+    private readonly Dictionary<string, ISseEventHandler> _sseHandlers;
+    
     public ConcurrentQueue<Profile>? Profiles { get; private set; }
-
-    public WolfApi() : this(NullLogger<WolfApi>.Instance) { }
     
-    public WolfApi(ILogger<WolfApi> logger) : 
-        this(logger, 
-            new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string>
-            {
-                {"SOCKET_PATH", "unix:///etc/wolf/cfg/wolf.sock"}
-            }!).Build())
-    { }
-    
-    public WolfApi(IConfiguration config) : this(NullLogger<WolfApi>.Instance, config) { }
-    
-    public WolfApi(ILogger<WolfApi> logger, IConfiguration configuration)
+    public WolfApi(ILogger<WolfApi>? logger = null, IConfiguration? configuration = null, IEnumerable<ISseEventHandler>? eventHandlers = null)
     {
+        logger ??= NullLogger<WolfApi>.Instance;
+        configuration ??= new ConfigurationBuilder().Build();
+        
+        if (eventHandlers != null)
+        {
+            _sseHandlers = eventHandlers.ToDictionary(h => h.EventName, h => h);
+        }
+        _sseHandlers ??= new Dictionary<string, ISseEventHandler>();
+        
         var socketPath = configuration.GetValue<string?>("SOCKET_PATH") ?? SocketPath;
         BaseUrl = configuration.GetValue<string?>("BASE_ADDRESS") ?? BaseUrl;
         
@@ -101,6 +99,7 @@ public partial class WolfApi : IHostedService, IWolfApi
             Profiles.Enqueue(profile);
         }
         await OnProfilesUpdatedEvent(profiles);
+        await Emit(ProfilesUpdated, profiles);
     }
     
     public async Task<GenericSuccessResponse> AddProfile(Profile profile)
@@ -136,15 +135,15 @@ public partial class WolfApi : IHostedService, IWolfApi
         await UpdateProfiles();
         return add;
     }
-
+    
     public async Task<ICollection<Profile>> GetProfiles() =>
         (await GeneratedClient.ProfilesAsync()).Profiles ?? Array.Empty<Profile>();
 
     //public event IApiEventPublisher.ProfilesUpdatedEventHandler? ProfilesUpdatedEvent;
 
+    public event Func<object, ICollection<Profile>, Task>? ProfilesUpdated;
     protected virtual Task OnProfilesUpdatedEvent(ICollection<Profile> profiles)
     {
         return Task.CompletedTask;
     }
-    
 }
