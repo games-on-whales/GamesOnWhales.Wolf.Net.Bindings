@@ -1,10 +1,9 @@
-using System.Diagnostics;
 using System.Reflection;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using Microsoft.Extensions.Logging.Testing;
-
+using Xunit;
 
 namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 
@@ -14,7 +13,9 @@ public class WolfContainer : IAsyncLifetime
     public FakeLogCollector? FakeLogCollector { get; private set; }
     public Action<string>? LogAction { get; set; }
     
-    public async Task InitializeAsync()
+    private string _tempFolder;
+    
+    public async ValueTask InitializeAsync()
     {
         FakeLogCollector = FakeLogCollector.Create(new FakeLogCollectorOptions
         {
@@ -24,10 +25,10 @@ public class WolfContainer : IAsyncLifetime
         var logger = new FakeLogger<WolfContainer>(FakeLogCollector);
         
         var tmpFolder = Path.GetTempPath();
-        var path = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
+        _tempFolder = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
         
-        if(!Directory.Exists(Path.Join(path, "cfg")))
-            Directory.CreateDirectory(path);
+        if(!Directory.Exists(Path.Join(_tempFolder, "cfg")))
+            Directory.CreateDirectory(_tempFolder);
         
         var ids = Utils.GetUserIDs(Environment.UserName);
         
@@ -47,7 +48,7 @@ public class WolfContainer : IAsyncLifetime
         
         // Create a new instance of a container.
         TestContainer = new ContainerBuilder()
-            .WithImage("ghcr.io/games-on-whales/wolf:stable")
+            .WithImage("ghcr.io/games-on-whales/wolf:sha-1e375d3")
             .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*HTTPS server listening on port.*"))
             .WithEnvironment(new Dictionary<string, string>
             {
@@ -57,7 +58,7 @@ public class WolfContainer : IAsyncLifetime
                 {"PGID", ids.gid},
                 {"UNAME", Environment.UserName}
             })
-            .WithBindMount(path, "/etc/wolf")
+            .WithBindMount(_tempFolder, "/etc/wolf")
             .WithBindMount("/var/run/docker.sock", "/var/run/docker.sock", AccessMode.ReadWrite)
             //Todo: add .WithOutputConsumer() for even cleaner Logs
             .WithResourceMapping(fileBuffer , "/etc/wolf/test.png", uint.Parse(ids.uid), uint.Parse(ids.gid))
@@ -68,8 +69,10 @@ public class WolfContainer : IAsyncLifetime
         await TestContainer.StartAsync();
     }
     
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         await TestContainer.StopAsync();
+        var dir = new DirectoryInfo(_tempFolder);
+        dir.Delete(true);
     }
 }

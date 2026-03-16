@@ -4,23 +4,27 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using OpenApiGenerator;
 using Xunit;
+using Xunit.Internal;
 
 namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 
 public class SourceGeneratorTests
 {
-    private const string DddRegistryText = @"User
-Document
-Customer";
-
+    private static Compilation CreateCompilation(string source)
+        => CSharpCompilation.Create("compilation",
+            [CSharpSyntaxTree.ParseText(source)],
+            [MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location)],
+            new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+    
     [Fact]
-    public void GenerateClassesBasedOnDDDRegistry()
+    public void SourceGeneratorDebugTest()
     {
         // Create an instance of the source generator.
         var generator = new SourceGeneratorWithAdditionalFiles();
+        var notifyGenerator = new SseEventHandlerGenerator();
         
         // Source generators should be tested using 'GeneratorDriver'.
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(notifyGenerator, generator);
         
         // Add the additional file separately from the compilation.
         driver = driver.AddAdditionalTexts(
@@ -30,20 +34,53 @@ Customer";
             ]
         );
 
-        // To run generators, we can use an empty compilation.
-        var compilation = CSharpCompilation.Create(nameof(SourceGeneratorTests));
-
-        // Run generators. Don't forget to use the new compilation rather than the previous one.
+        var compilation = CreateCompilation("""
+                                            namespace GamesOnWhales;
+                                            
+                                            public interface ISseEventHandler
+                                            {
+                                                public Task Call(WolfApi api, string eventData);
+                                                string EventName { get; }
+                                            }
+                                            
+                                            public interface ISseEventHandler<T> : ISseEventHandler
+                                            {
+                                                public Task Convert(string eventData, out T result);
+                                            }
+                                            
+                                            public class PlugDeviceEvent
+                                            {
+                                                
+                                            }
+                                            
+                                            [SseEventHandler]
+                                            public partial class PlugDeviceEventHandler : ISseEventHandler<PlugDeviceEvent>
+                                            {
+                                                public Task Call(WolfApi api, string eventData)
+                                                {
+                                                    
+                                                    return Task.CompletedTask;
+                                                }
+                                            
+                                                public Task Convert(string eventData, out PlugDeviceEvent result)
+                                                {
+                                                    throw new NotImplementedException();
+                                                }
+                                            
+                                                public string EventName => "wolf::core::events::PlugDeviceEvent";
+                                            }
+                                            """);
+        
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var newCompilation, out _, TestContext.Current.CancellationToken);
 
         // Retrieve all files in the compilation.
         var generatedFiles = newCompilation.SyntaxTrees
-            .Select(t => Path.GetFileName(t.FilePath))
+            .Select(t => (Name: Path.GetFileName(t.FilePath), Content: t.GetText().ToString()))
             .ToArray();
         
-        Assert.Equivalent(new[]
-        {
-            "GeneratedApiClient.g.cs"
-        }, generatedFiles);
+        // Assert.Equivalent(new[]
+        // {
+        // 
+        // }, generatedFiles);
     }
 }

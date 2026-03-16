@@ -92,7 +92,7 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
         var tmpFolder = Path.GetTempPath();
         var path = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
         
-        Api = new WolfApi(new ConfigurationBuilder()
+        Api = new WolfApi(configuration: new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string>
             {
                 {"SOCKET_PATH", $"unix://{Path.Join(path, "cfg/wolf.sock")}"}
