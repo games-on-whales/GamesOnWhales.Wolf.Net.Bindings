@@ -38,7 +38,7 @@ public class SseEventHandlerGenerator : IIncrementalGenerator
             (spc, source) => Execute(spc, source.Left, source.Right));
     }
 
-    private static void Execute(SourceProductionContext context, Compilation compilation,
+    private void Execute(SourceProductionContext context, Compilation compilation,
         ImmutableArray<ClassDeclarationSyntax> syntaxes)
     {
         foreach (var syntax in syntaxes)
@@ -62,14 +62,41 @@ public class SseEventHandlerGenerator : IIncrementalGenerator
                 interfaceGenericType = interfaceSymbol.TypeArguments[0].ToDisplayString();
             }
             
+            var namespaceName = symbol.ContainingNamespace.ToDisplayString();
+
+            var simplePassthrough = """
+                                            public Task Convert(string eventData, out string result)
+                                            {
+                                                if(Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Debug))
+                                                    Logger.LogDebug("{event}: {data}", EventName, eventData);
+                                                result = eventData;
+                                                return Task.CompletedTask;
+                                            }
+                                    """;
+
+            var jsonConvert = $$"""
+                                #nullable enable
+                                        public Task Convert(string eventData, out {{interfaceGenericType}} result)
+                                        {
+                                            result = System.Text.Json.JsonSerializer.Deserialize<{{interfaceGenericType}}>(eventData);
+                                            if(Logger.IsEnabled(LogLevel.Debug) && result is null)
+                                                Logger.LogDebug("failed converting event: {event} to type {{interfaceGenericType}}:\n{data}", EventName, eventData);
+                                            return Task.CompletedTask;
+                                        }
+                                #nullable disable
+                                """;
+            
             var code = $$"""
+                       #pragma warning disable CS9113
+                       using Microsoft.Extensions.Logging;
+                       
                        namespace GamesOnWhales
                        {
                             public partial class WolfApi
                             {
+                       #nullable enable
                                 public event Func<object, {{interfaceGenericType}}, System.Threading.Tasks.Task>? {{eventName}};
-                                
-                                
+                       
                                 public async Task Emit{{eventName}}({{interfaceGenericType}} data)
                                 {
                                     await On{{eventName}}(data);
@@ -77,25 +104,36 @@ public class SseEventHandlerGenerator : IIncrementalGenerator
                                 }
                                 
                                 protected virtual Task On{{eventName}}({{interfaceGenericType}} data)
-                                {
-                                    return System.Threading.Tasks.Task.CompletedTask;
-                                }
+                                    => Task.CompletedTask;
+
+                       #nullable disable
                             }
-                            
+                       }
+                       
+                       namespace {{namespaceName}}
+                       {
                             /// <summary>EventHandler for a specific SSE event.
                             /// Register the EventHandler to enable listening to it's associated SSE event, 
                             /// or pass it to the constructor of the <c>WolfApi</c> manually if no DI framework is used.</summary>
                             public partial class {{className}}
                             {
+                                public Microsoft.Extensions.Logging.ILogger Logger { get; }
+                                public {{className}}(Microsoft.Extensions.Logging.ILogger<{{className}}> logger)
+                                {
+                                    Logger = logger;
+                                }
+                                
                                 public async Task Call(WolfApi api, string data)
                                 {
                                     await Convert(data, out var converted);
                                     await api.Emit{{eventName}}(converted);
                                 }
+                       {{(interfaceGenericType == "string" ? simplePassthrough : jsonConvert)}}
                             }
                        }
+                       #pragma warning restore CS9113
                        """;
-
+            
             context.AddSource($"{eventName}.g.cs", code);
         }
     }

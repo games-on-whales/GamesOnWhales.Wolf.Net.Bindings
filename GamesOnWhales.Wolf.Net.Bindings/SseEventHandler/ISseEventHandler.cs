@@ -1,4 +1,6 @@
-namespace GamesOnWhales;
+using Microsoft.Extensions.Logging;
+
+namespace GamesOnWhales.SSE;
 
 public interface ISseEventHandler
 {
@@ -6,7 +8,8 @@ public interface ISseEventHandler
     string EventName { get; }
 }
 
-public interface ISseEventHandler<T> : ISseEventHandler
+internal interface ISseEventHandler<T> : ISseEventHandler
 {
+    public ILogger Logger { get; }
     public Task Convert(string eventData, out T result);
 }
