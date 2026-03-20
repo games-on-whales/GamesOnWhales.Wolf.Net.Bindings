@@ -4,14 +4,19 @@ using System.Globalization;
 using System.Net;
 using System.Threading.RateLimiting;
 
-internal sealed class ClientSideRateLimitedHandler(
-    RateLimiter limiter, HttpMessageHandler httpMessageHandler)
-    : DelegatingHandler(httpMessageHandler), IAsyncDisposable
+internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDisposable
 {
+    private readonly RateLimiter _limiter;
+
+    public ClientSideRateLimitedHandler(RateLimiter limiter, HttpMessageHandler httpMessageHandler) : base(httpMessageHandler)
+    {
+        _limiter = limiter;
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        using RateLimitLease lease = await limiter.AcquireAsync(
+        using RateLimitLease lease = await _limiter.AcquireAsync(
             permitCount: 1, cancellationToken);
 
         if (lease.IsAcquired)
@@ -34,7 +39,7 @@ internal sealed class ClientSideRateLimitedHandler(
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     { 
-        await limiter.DisposeAsync().ConfigureAwait(false);
+        await _limiter.DisposeAsync().ConfigureAwait(false);
 
         Dispose(disposing: false);
         GC.SuppressFinalize(this);
@@ -46,7 +51,7 @@ internal sealed class ClientSideRateLimitedHandler(
 
         if (disposing)
         {
-            limiter.Dispose();
+            _limiter.Dispose();
         }
     }
 }

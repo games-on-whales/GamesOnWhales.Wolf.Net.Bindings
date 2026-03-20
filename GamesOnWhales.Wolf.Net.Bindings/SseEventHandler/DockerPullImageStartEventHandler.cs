@@ -1,0 +1,15 @@
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class DockerPullImageStartEvent
+{
+    [JsonPropertyName("image_name")]
+    public required string ImageName { get; set; }
+}
+
+[SseEventHandler]
+public partial class DockerPullImageStartEventHandler : ISseEventHandler<DockerPullImageStartEvent?>
+{
+    public string EventName => "DockerPullImageStartEvent";
+}

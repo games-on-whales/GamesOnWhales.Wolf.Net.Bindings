@@ -53,7 +53,8 @@ public partial class WolfApi
             var json = $$"""
                          { "image_name": "{{imageName}}" }
                          """;
-            
+
+            await Emit(DockerImagePullProgress, (imageName, 0.0));
             await OnDockerImagePullProgressEvent(imageName, 0.0);
 
             _logger.LogInformation("Pulling image: {img}", imageName);
@@ -88,9 +89,15 @@ public partial class WolfApi
                     ExistingDockerImages[imageName] = true;
 
                     if (hasDownloaded)
+                    {
+                        await Emit(DockerImageUpdated, imageName);
                         await OnDockerImageUpdatedEvent(imageName);
+                    }
                     else
+                    {
+                        await Emit(DockerImageAlreadyUptoDate, imageName);
                         await OnDockerImageAlreadyUptoDateEvent(imageName);
+                    }
 
                     _logger.LogInformation("Image: {img} {status}", imageName,
                         hasDownloaded ? "was Updated" : "is already up to Date");
@@ -128,6 +135,7 @@ public partial class WolfApi
                 lastCurrent = current;
                 var percentProgress = 100.0 * (current + (isUnpacking ? sizeTotal : 0)) / total;
 
+                await Emit(DockerImagePullProgress, (imageName, percentProgress));
                 await OnDockerImagePullProgressEvent(imageName, percentProgress);
             }
         });
@@ -145,16 +153,19 @@ public partial class WolfApi
         }
     }
 
+    public event Func<object, string, Task>? DockerImageUpdated;
     protected virtual Task OnDockerImageUpdatedEvent(string imageName)
     {
         return Task.CompletedTask;
     }
 
+    public event Func<object, string, Task>? DockerImageAlreadyUptoDate;
     protected virtual Task OnDockerImageAlreadyUptoDateEvent(string imageName)
     {
         return Task.CompletedTask;
     }
 
+    public event Func<object, (string imageName, double progress), Task>? DockerImagePullProgress;
     protected virtual Task OnDockerImagePullProgressEvent(string imageName, double progress)
     {
         return Task.CompletedTask;

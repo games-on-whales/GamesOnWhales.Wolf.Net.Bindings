@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -20,11 +19,6 @@ public class SourceGeneratorWithAdditionalFiles : IIncrementalGenerator
             .Select((a, c) => (FileName: Path.GetFileNameWithoutExtension(a.Path), Content: a.GetText(c)!.ToString()))
             .Collect();
 
-        var compilationAndFiles = context.CompilationProvider.Combine(files);
-        
-        //context.RegisterSourceOutput(compilationAndFiles,
-        //    (productionContext, sourceContext) => GenerateCode(productionContext, sourceContext.Left, sourceContext.Right));
-        
         context.RegisterSourceOutput(files, GenerateCode); 
     }
 
@@ -113,62 +107,5 @@ public class SourceGeneratorWithAdditionalFiles : IIncrementalGenerator
         // sanitize events type names
         text = Regex.Replace(text, @"wolf__core__events__(.*?)""", @"$1""");
         return OpenApiDocument.FromJsonAsync(text).Result;
-    }
-
-    private static void GenerateClientCode(SourceProductionContext context,
-        string attributeArgument,
-        INamedTypeSymbol typeSymbol,
-        string openApiJson)
-    {
-        try
-        {
-            var document = GenerateDocument(openApiJson);
-            
-            var settings = new CSharpClientGeneratorSettings
-            {
-                ClassName = typeSymbol.Name, 
-                CSharpGeneratorSettings = 
-                {
-                    Namespace = typeSymbol.ContainingNamespace.Name
-                }
-            };
-        
-            var generator = new CSharpClientGenerator(document, settings);	
-            var code = generator.GenerateFile();
-            context.AddSource($"{typeSymbol.ToDisplayString()}.{attributeArgument}.new.g.cs", code);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-    
-    private static async void GenerateCode(SourceProductionContext context, Compilation compilation,
-        ImmutableArray<(string, string)> files)
-    {
-        foreach (var file in files)
-        {
-            try
-            {
-                var document = GenerateDocument(file.Item2);
-
-                var settings = new CSharpClientGeneratorSettings
-                {
-                    ClassName = "NSwag" + Path.GetFileNameWithoutExtension(file.Item1), 
-                    CSharpGeneratorSettings = 
-                    {
-                        Namespace = "NSwag" + Path.GetFileNameWithoutExtension(file.Item1)
-                    }
-                };
-            
-                var generator = new CSharpClientGenerator(document, settings);	
-                var code = generator.GenerateFile();
-                context.AddSource($"{"NSwag" + Path.GetFileNameWithoutExtension(file.Item1)}.g.cs", code);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-        }
     }
 }
