@@ -1,3 +1,5 @@
+using GamesOnWhales.SSE;
+
 namespace GamesOnWhales;
 
 using System.Collections.Concurrent;
@@ -5,12 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Components;
 
-public partial class WolfApi : IHostedService, IWolfApi
+public partial class WolfApi : IWolfApi
 {
     public GeneratedApiClient GeneratedClient { get; }
     private string SocketPath { get; set; } = "unix:///etc/wolf/cfg/wolf.sock";
@@ -142,8 +143,5 @@ public partial class WolfApi : IHostedService, IWolfApi
     //public event IApiEventPublisher.ProfilesUpdatedEventHandler? ProfilesUpdatedEvent;
 
     public event Func<object, ICollection<Profile>, Task>? ProfilesUpdated;
-    protected virtual Task OnProfilesUpdatedEvent(ICollection<Profile> profiles)
-    {
-        return Task.CompletedTask;
-    }
+    protected virtual Task OnProfilesUpdatedEvent(ICollection<Profile> profiles) => Task.CompletedTask;
 }
