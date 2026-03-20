@@ -1,14 +1,15 @@
-namespace GamesOnWhales;
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class ResumeStreamEvent
+{
+    [JsonPropertyName("session_id")]
+    public required string SessionId;
+}
 
 [SseEventHandler]
-public partial class ResumeStreamEventHandler : ISseEventHandler<string>
+public partial class ResumeStreamEventHandler : ISseEventHandler<ResumeStreamEvent?>
 {
-    // Todo: Implement Convert to correct dto.
-    public Task Convert(string eventData, out string result)
-    {
-        result = eventData;
-        return Task.CompletedTask;
-    }
-
     public string EventName => "wolf::core::events::ResumeStreamEvent";
 }

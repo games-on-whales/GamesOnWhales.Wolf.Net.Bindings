@@ -1,14 +1,17 @@
-namespace GamesOnWhales;
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class JoinLobbyEvent
+{
+    [JsonPropertyName("lobby_id")]
+    public required string LobbyId { get; set; }
+    [JsonPropertyName("moonlight_session_id")]
+    public required string MoonlightSessionId { get; set; }
+}
 
 [SseEventHandler]
-public partial class JoinLobbyEventHandler : ISseEventHandler<string>
+public partial class JoinLobbyEventHandler : ISseEventHandler<JoinLobbyEvent?>
 {
-    // Todo: Implement Convert to correct dto.
-    public Task Convert(string eventData, out string result)
-    {
-        result = eventData;
-        return Task.CompletedTask;
-    }
-
     public string EventName => "wolf::core::events::JoinLobbyEvent";
 }

@@ -1,14 +1,15 @@
-namespace GamesOnWhales;
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class PauseStreamEvent
+{
+    [JsonPropertyName("session_id")]
+    public required string SessionId { get; set; }
+}
 
 [SseEventHandler]
-public partial class PauseStreamEventHandler : ISseEventHandler<string>
+public partial class PauseStreamEventHandler : ISseEventHandler<PauseStreamEvent?>
 {
-    // Todo: Implement Convert to correct dto.
-    public Task Convert(string eventData, out string result)
-    {
-        result = eventData;
-        return Task.CompletedTask;
-    }
-
     public string EventName => "wolf::core::events::PauseStreamEvent";
 }

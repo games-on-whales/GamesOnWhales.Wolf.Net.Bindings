@@ -1,14 +1,17 @@
-namespace GamesOnWhales;
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class SwitchStreamProducerEvent
+{
+    [JsonPropertyName("session_id")]
+    public required string SessionId { get; set; }
+    [JsonPropertyName("interpipe_src_id")]
+    public required string InterpipeSrcId { get; set; }
+}
 
 [SseEventHandler]
-public partial class SwitchStreamProducerEventHandler : ISseEventHandler<string>
+public partial class SwitchStreamProducerEventHandler : ISseEventHandler<SwitchStreamProducerEvent?>
 {
-    // Todo: Implement Convert to correct dto.
-    public Task Convert(string eventData, out string result)
-    {
-        result = eventData;
-        return Task.CompletedTask;
-    }
-
     public string EventName => "wolf::core::events::SwitchStreamProducerEvents";
 }

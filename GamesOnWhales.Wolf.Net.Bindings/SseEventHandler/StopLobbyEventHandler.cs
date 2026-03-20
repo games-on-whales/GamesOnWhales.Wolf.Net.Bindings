@@ -1,14 +1,15 @@
-namespace GamesOnWhales;
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class StopLobbyEvent
+{
+    [JsonPropertyName("lobby_id")]
+    public required string LobbyId { get; set; }
+}
 
 [SseEventHandler]
-public partial class StopLobbyEventHandler : ISseEventHandler<string>
+public partial class StopLobbyEventHandler : ISseEventHandler<StopLobbyEvent?>
 {
-    // Todo: Implement Convert to correct dto.
-    public Task Convert(string eventData, out string result)
-    {
-        result = eventData;
-        return Task.CompletedTask;
-    }
-
     public string EventName => "wolf::core::events::StopLobbyEvent";
 }

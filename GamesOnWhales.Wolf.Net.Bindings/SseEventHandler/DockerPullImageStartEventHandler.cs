@@ -1,14 +1,15 @@
-namespace GamesOnWhales;
+using System.Text.Json.Serialization;
+
+namespace GamesOnWhales.SSE;
+
+public class DockerPullImageStartEvent
+{
+    [JsonPropertyName("image_name")]
+    public required bool ImageName { get; set; }
+}
 
 [SseEventHandler]
-public partial class DockerPullImageStartEventHandler : ISseEventHandler<string>
+public partial class DockerPullImageStartEventHandler : ISseEventHandler<DockerPullImageStartEvent?>
 {
-    // Todo: Implement Convert to correct dto.
-    public Task Convert(string eventData, out string result)
-    {
-        result = eventData;
-        return Task.CompletedTask;
-    }
-
     public string EventName => "DockerPullImageStartEvent";
 }
