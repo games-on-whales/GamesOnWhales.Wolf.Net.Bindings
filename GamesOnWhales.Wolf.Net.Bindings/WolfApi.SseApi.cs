@@ -67,6 +67,16 @@ public partial class WolfApi : BackgroundService
     public event Func<object, bool, Task>? SseConnectionLostEvent;
     protected virtual Task OnSseConnectionLostEvent(bool isFatal) => Task.CompletedTask;
     
+    /// <summary>
+    /// Gets Invoked if no EventHandler is registered for the received SSE event.
+    /// </summary>
     public event Func<object, (string @event, string data), Task>? SseEvent;
+    
+    /// <summary>
+    /// <c>OnEvent</c> gets called if no EventHandler is registered for <c>@event</c>.
+    /// </summary>
+    /// <param name="event">the Identifying string for the SSE event.</param>
+    /// <param name="data">the SSE events content in JSON format.</param>
+    /// <returns></returns>
     protected virtual Task OnEvent(string @event, string data) => Task.CompletedTask;
 }
