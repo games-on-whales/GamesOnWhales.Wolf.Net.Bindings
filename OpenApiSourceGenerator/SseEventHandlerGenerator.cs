@@ -78,9 +78,16 @@ public class SseEventHandlerGenerator : IIncrementalGenerator
                                 #nullable enable
                                         public Task Convert(string eventData, out {{interfaceGenericType}} result)
                                         {
-                                            result = System.Text.Json.JsonSerializer.Deserialize<{{interfaceGenericType}}>(eventData);
-                                            if(Logger.IsEnabled(LogLevel.Debug) && result is null)
-                                                Logger.LogDebug("failed converting event: {event} to type {{interfaceGenericType}}:\n{data}", EventName, eventData);
+                                            try
+                                            {
+                                                result = System.Text.Json.JsonSerializer.Deserialize<{{interfaceGenericType}}>(eventData);
+                                            }
+                                            catch(System.Text.Json.JsonException)
+                                            {
+                                                Logger.LogError("failed converting event: {event} to type {{interfaceGenericType}}:\n{data}", EventName, eventData);
+                                                result = null;
+                                            }
+
                                             return Task.CompletedTask;
                                         }
                                 #nullable disable
