@@ -41,11 +41,11 @@ public class VideoSessionEvent
     [JsonPropertyName("slices_per_frame")]
     public required int SlicesPerFrame { get; set; }
     [JsonPropertyName("color_range")]
-    public required int ColorRange { get; set; }
+    public required string ColorRange { get; set; }
     [JsonPropertyName("color_space")]
-    public required int ColorSpace { get; set; }
+    public required string ColorSpace { get; set; }
     [JsonPropertyName("client_ip")]
-    public required int ClientIp { get; set; }
+    public required string ClientIp { get; set; }
     [JsonPropertyName("rtp_secret_payload")]
     public required ICollection<int> RtpSecretPayload { get; set; }
 }

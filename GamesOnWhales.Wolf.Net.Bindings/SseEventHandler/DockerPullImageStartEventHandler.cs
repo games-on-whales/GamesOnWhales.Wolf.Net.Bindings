@@ -5,7 +5,7 @@ namespace GamesOnWhales.SSE;
 public class DockerPullImageStartEvent
 {
     [JsonPropertyName("image_name")]
-    public required bool ImageName { get; set; }
+    public required string ImageName { get; set; }
 }
 
 [SseEventHandler]
