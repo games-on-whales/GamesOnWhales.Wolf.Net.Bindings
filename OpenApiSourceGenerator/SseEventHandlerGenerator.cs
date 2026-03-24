@@ -80,7 +80,7 @@ public class SseEventHandlerGenerator : IIncrementalGenerator
                                         {
                                             try
                                             {
-                                                result = System.Text.Json.JsonSerializer.Deserialize<{{interfaceGenericType}}>(eventData);
+                                                result = System.Text.Json.JsonSerializer.Deserialize<{{interfaceGenericType}}>(eventData, _jsonSerializerOptions);
                                             }
                                             catch(System.Text.Json.JsonException)
                                             {
@@ -125,9 +125,19 @@ public class SseEventHandlerGenerator : IIncrementalGenerator
                             public partial class {{className}}
                             {
                                 public Microsoft.Extensions.Logging.ILogger Logger { get; }
-                                public {{className}}(Microsoft.Extensions.Logging.ILogger<{{className}}> logger)
+                       #nullable enable
+                                private readonly System.Text.Json.JsonSerializerOptions? _jsonSerializerOptions;
+                                
+                                public {{className}}(Microsoft.Extensions.Logging.ILogger<{{className}}>? logger = null, 
+                                    System.Text.Json.JsonSerializerOptions? options = null)
                                 {
-                                    Logger = logger;
+                       #nullable disable
+                                    _jsonSerializerOptions = options;
+                       
+                                    if(logger is null)
+                                        Logger = Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+                                    else
+                                        Logger = logger; 
                                 }
                                 
                                 public async Task Call(WolfApi api, string data)

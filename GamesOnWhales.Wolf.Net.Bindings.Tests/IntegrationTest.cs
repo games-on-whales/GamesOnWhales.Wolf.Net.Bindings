@@ -12,7 +12,7 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
     [Fact]
     public async Task TestGetProfiles()
     {
-        var response = await Api.GetProfiles();
+        var response = await Api.GetProfilesAsync();
         Assert.Contains(response, profile => profile.Name == "User");
         var resp = await Api.GeneratedClient.ProfilesAsync(TestContext.Current.CancellationToken);
         Assert.Contains(resp.Profiles, profile => profile.Name == "User");

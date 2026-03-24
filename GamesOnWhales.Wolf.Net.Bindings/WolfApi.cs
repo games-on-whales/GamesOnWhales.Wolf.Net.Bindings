@@ -22,8 +22,6 @@ public partial class WolfApi : IWolfApi
     
     private readonly Dictionary<string, ISseEventHandler> _sseHandlers;
     
-    public ConcurrentQueue<Profile>? Profiles { get; private set; }
-    
     public WolfApi(ILogger<WolfApi>? logger = null, IConfiguration? configuration = null, IEnumerable<ISseEventHandler>? eventHandlers = null)
     {
         logger ??= NullLogger<WolfApi>.Instance;
@@ -88,60 +86,7 @@ public partial class WolfApi : IWolfApi
         };
         
         _logger = logger;
-    }
-    
-    [MemberNotNull(nameof(Profiles))]
-    public async Task UpdateProfiles()
-    {
-        Profiles = new ConcurrentQueue<Profile>();
-        var profiles = await GetProfiles();
-        foreach (var profile in profiles)
-        {
-            Profiles.Enqueue(profile);
-        }
-        await OnProfilesUpdatedEvent(profiles);
-        await Emit(ProfilesUpdated, profiles);
-    }
-    
-    public async Task<GenericSuccessResponse> AddProfile(Profile profile)
-    {
-        var val = await GeneratedClient.Add2Async(profile);
-        await UpdateProfiles();
-        return val;
-    }
 
-    public async Task<GenericSuccessResponse> DeleteProfile(Profile profile)
-        => await DeleteProfile(profile.Id);
-
-    public async Task<GenericSuccessResponse> DeleteProfile(string id)
-    {
-        var val = await GeneratedClient.RemoveAsync(new ProfileRemoveRequest()
-        {
-            Id = id
-        });
-        await UpdateProfiles();
-        return val;
+        ProfilesUpdated += (_, profiles) => OnProfilesUpdatedEvent(profiles);
     }
-
-    public async Task<GenericSuccessResponse> UpdateProfile(string id, Profile profile)
-    {
-        if(id != profile.Id) throw new ArgumentException("id must be equal to profile id", nameof(id));
-        var del = await GeneratedClient.RemoveAsync(new ProfileRemoveRequest()
-        {
-            Id = id
-        });
-        if (!del.Success) return del;
-        var add = await GeneratedClient.Add2Async(profile);
-        // Todo: If Delete Succeeds and Add Fails, Try rescue Profile by some means, or wait for a Dedicated Update endpoint.
-        await UpdateProfiles();
-        return add;
-    }
-    
-    public async Task<ICollection<Profile>> GetProfiles() =>
-        (await GeneratedClient.ProfilesAsync()).Profiles ?? Array.Empty<Profile>();
-
-    //public event IApiEventPublisher.ProfilesUpdatedEventHandler? ProfilesUpdatedEvent;
-
-    public event Func<object, ICollection<Profile>, Task>? ProfilesUpdated;
-    protected virtual Task OnProfilesUpdatedEvent(ICollection<Profile> profiles) => Task.CompletedTask;
 }
