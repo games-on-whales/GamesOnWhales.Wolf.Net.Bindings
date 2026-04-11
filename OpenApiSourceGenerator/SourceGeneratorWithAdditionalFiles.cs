@@ -106,6 +106,8 @@ public class SourceGeneratorWithAdditionalFiles : IIncrementalGenerator
         text = Regex.Replace(text, @"wolf__api__(.*?)""", @"$1""");
         // sanitize events type names
         text = Regex.Replace(text, @"wolf__core__events__(.*?)""", @"$1""");
+        // Make sure moonlight_session_id is string.
+        text = Regex.Replace(text, @"""moonlight_session_id"":{""type"":""integer""}", @"""moonlight_session_id"":{""type"":""string""}");
         return OpenApiDocument.FromJsonAsync(text).Result;
     }
 }

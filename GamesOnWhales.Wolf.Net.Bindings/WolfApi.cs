@@ -22,7 +22,9 @@ public partial class WolfApi : IWolfApi
     
     private readonly Dictionary<string, ISseEventHandler> _sseHandlers;
     
-    public WolfApi(ILogger<WolfApi>? logger = null, IConfiguration? configuration = null, IEnumerable<ISseEventHandler>? eventHandlers = null)
+    public WolfApi(ILogger<WolfApi>? logger = null,
+        IConfiguration? configuration = null,
+        IEnumerable<ISseEventHandler>? eventHandlers = null)
     {
         logger ??= NullLogger<WolfApi>.Instance;
         configuration ??= new ConfigurationBuilder().Build();
