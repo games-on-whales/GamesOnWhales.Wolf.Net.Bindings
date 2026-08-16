@@ -68,7 +68,6 @@ public class WolfContainer : IAsyncLifetime
                 // {"UNAME", Environment.UserName}
             })
             .WithBindMount(_tempFolder, "/etc/wolf")
-            .WithBindMount(run, "/run/user/wolf")
             .WithBindMount("/var/run/docker.sock", "/var/run/docker.sock", AccessMode.ReadWrite)
             .WithResourceMapping(fileBuffer , "/etc/wolf/test.png", uint.Parse(ids.uid), uint.Parse(ids.gid))
             
@@ -81,7 +80,7 @@ public class WolfContainer : IAsyncLifetime
         
         await TestContainer.StartAsync();
         
-        await TestContainer.ExecAsync(["chmod", "777", "/etc/wolf/cfg/wolf.sock"]);
+        await TestContainer.ExecAsync(["chown", "-R", $"{ids.uid}:{ids.gid}", "/etc/wolf/"]);
     }
     
     public async ValueTask DisposeAsync()
