@@ -39,12 +39,12 @@ public partial class WolfApi : IWolfApi
         BaseUrl = configuration.GetValue<string?>("BASE_ADDRESS") ?? BaseUrl;
         
         var options = new TokenBucketRateLimiterOptions
-        { 
-            TokenLimit = 8, 
+        {
+            TokenLimit = 100, 
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            QueueLimit = 3, 
+            QueueLimit = 100, 
             ReplenishmentPeriod = TimeSpan.FromMilliseconds(1), 
-            TokensPerPeriod = 2, 
+            TokensPerPeriod = 5, 
             AutoReplenishment = true
         };
         
