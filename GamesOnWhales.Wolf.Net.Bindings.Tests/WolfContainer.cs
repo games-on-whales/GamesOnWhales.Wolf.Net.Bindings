@@ -81,7 +81,7 @@ public class WolfContainer : IAsyncLifetime
         
         await TestContainer.StartAsync();
         
-        await TestContainer.ExecAsync(["chmod", "777", "/etc/wolf/cfg/wolf.sock"]);
+        await TestContainer.ExecAsync(["chown", "-R", $"{ids.uid}:{ids.gid}", "/etc/wolf/"]);
     }
     
     public async ValueTask DisposeAsync()
