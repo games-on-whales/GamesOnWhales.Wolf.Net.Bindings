@@ -1,47 +1,54 @@
+using System.Net.ServerSentEvents;
 using Microsoft.Extensions.Hosting;
 
 namespace GamesOnWhales;
 using Microsoft.Extensions.Logging;
 
-public partial class WolfApi : BackgroundService
+public partial class WolfApi : IHostedService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken) =>
-        await BackgroundProcessing(stoppingToken);
-
-    private async Task BackgroundProcessing(CancellationToken token)
+    private CancellationTokenSource? _sseCancellationTokenSource;
+    private Task? _sseListeningTask;
+    
+    private async Task ListenAsync(CancellationToken stoppingToken)
     {
-        while (!token.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                var stream = await _httpClient.GetStreamAsync($"{BaseUrl}api/v1/events", token);
+                var stream = await _httpClient.GetStreamAsync($"{BaseUrl}api/v1/events", stoppingToken);
                 var eventType = string.Empty;
-                using var reader = new StreamReader(stream);
-                while (await reader.ReadLineAsync(token) is { } line)
+
+                await foreach (var item in SseParser.Create(stream).EnumerateAsync(stoppingToken))
                 {
-                    if(line == ":keepalive") continue;
+                    if (item.Data == ":keepalive") continue;
 
-                    if (line.StartsWith("event:"))
-                        eventType = line["event: ".Length..];
+                    if (item.Data.StartsWith("event:"))
+                        eventType = item.Data["event: ".Length..];
 
-                    if (!line.StartsWith("data:")) continue;
-                    
-                    await FilterApiEvents(eventType, line["data: ".Length..]);
+                    if (!item.Data.StartsWith("data:")) continue;
+
+                    await FilterApiEvents(eventType, item.Data["data: ".Length..]);
                 }
 
                 _logger.LogError("Lost connection to the Wolf API SSE. End of Stream.");
                 await Emit(SseConnectionLostEvent, false);
                 await OnSseConnectionLostEvent(false);
-                await Task.Delay(1000, token);
+                await Task.Delay(1000, stoppingToken);
             }
             catch (HttpRequestException e)
             {
-                _logger.LogError("The Wolf API SSE encountered an HttpRequestException exception: Statuscode: {statuscode} - {message}", 
+                _logger.LogError(
+                    "The Wolf API SSE encountered an HttpRequestException exception: Statuscode: {statuscode} - {message}",
                     e.StatusCode.ToString(),
                     e.Message);
                 await Emit(SseConnectionLostEvent, true);
                 await OnSseConnectionLostEvent(true);
-                await Task.Delay(5000, token);
+                await Task.Delay(5000, stoppingToken);
+            }
+            catch (TaskCanceledException)
+            {
+                _logger.LogInformation("SSE read stopped");
+                return;
             }
         }
     }
@@ -79,4 +86,32 @@ public partial class WolfApi : BackgroundService
     /// <param name="data">the SSE events content in JSON format.</param>
     /// <returns></returns>
     protected virtual Task OnEvent(string @event, string data) => Task.CompletedTask;
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        if (_sseListeningTask is { IsCompleted: false }) return Task.CompletedTask;
+        
+        _sseCancellationTokenSource ??= new CancellationTokenSource();
+        _sseListeningTask = ListenAsync(_sseCancellationTokenSource.Token);
+        return Task.CompletedTask;
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _sseCancellationTokenSource?.Cancel();
+        
+        if (_sseListeningTask is { IsCompleted: false })
+        {
+            try
+            {
+                await _sseListeningTask;
+            }
+            catch (TaskCanceledException)
+            { }
+        }
+        
+        _sseCancellationTokenSource?.Dispose();
+        _sseCancellationTokenSource = null;
+        _sseListeningTask = null;
+    }
 }
