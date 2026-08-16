@@ -27,8 +27,16 @@ public class WolfContainer : IAsyncLifetime
         var tmpFolder = Path.GetTempPath();
         _tempFolder = Path.Join(tmpFolder, "GamesOnWhales.Wolf.Net.Bindings.Tests");
         
-        if(!Directory.Exists(Path.Join(_tempFolder, "cfg")))
+        if(!Directory.Exists(_tempFolder))
             Directory.CreateDirectory(_tempFolder);
+        
+        var cfg = Path.Join(_tempFolder, "cfg");
+        if(!Directory.Exists(cfg))
+            Directory.CreateDirectory(cfg);
+        
+        var run = Path.Join(_tempFolder, "run");
+        if(!Directory.Exists(run))
+            Directory.CreateDirectory(run);
         
         var ids = Utils.GetUserIDs(Environment.UserName);
         
@@ -47,26 +55,33 @@ public class WolfContainer : IAsyncLifetime
         fileBuffer = ms.ToArray();
         
         // Create a new instance of a container.
-        TestContainer = new ContainerBuilder()
-            .WithImage("ghcr.io/games-on-whales/wolf:sha-1e375d3")
+        TestContainer = new ContainerBuilder("ghcr.io/games-on-whales/wolf:stable")
+            .WithEntrypoint(["/wolf/wolf"])
             .WithWaitStrategy(Wait.ForUnixContainer().UntilMessageIsLogged(".*HTTPS server listening on port.*"))
+            //.WithWaitStrategy(Wait.ForUnixContainer().)
             .WithEnvironment(new Dictionary<string, string>
             {
                 {"WOLF_SOCKET_PATH","/etc/wolf/cfg/wolf.sock"},
                 {"WOLF_LOG_LEVEL", "DEBUG"},
-                {"PUID", ids.uid},
-                {"PGID", ids.gid},
-                {"UNAME", Environment.UserName}
+                // {"PUID", ids.uid},
+                // {"PGID", ids.gid},
+                // {"UNAME", Environment.UserName}
             })
             .WithBindMount(_tempFolder, "/etc/wolf")
+            .WithBindMount(run, "/run/user/wolf")
             .WithBindMount("/var/run/docker.sock", "/var/run/docker.sock", AccessMode.ReadWrite)
-            //Todo: add .WithOutputConsumer() for even cleaner Logs
             .WithResourceMapping(fileBuffer , "/etc/wolf/test.png", uint.Parse(ids.uid), uint.Parse(ids.gid))
             
             // Build the container configuration.
+            // .WithCreateParameterModifier(modifier =>
+            // {
+            //     modifier.User = $"{ids.uid}:{ids.gid}";
+            // })
             .Build();
         
         await TestContainer.StartAsync();
+        
+        await TestContainer.ExecAsync(["chmod", "777", "/etc/wolf/cfg/wolf.sock"]);
     }
     
     public async ValueTask DisposeAsync()

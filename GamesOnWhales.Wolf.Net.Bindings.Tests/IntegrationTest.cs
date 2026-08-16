@@ -37,14 +37,12 @@ public sealed class IntegrationTest : IClassFixture<WolfContainer>
         Assert.Equivalent(ms1.ToArray(), ms2.ToArray(), strict: true);
     }
     
-    // Sadly mounting the docker socket wont allow the wolf container to run anymore, reason still unkown
-    // TODO: Fix mounting docker socket allowing for tests that rely on docker access...
-    //[Fact]
-    //public async Task TestDockerInspect()
-    //{
-    //     var response = await Api.GetDockerImagesInspectAsync("ghcr.io/games-on-whales/wolf:stable");
-    //     testOutputHelper.WriteLine(response.ToString());
-    //}
+    // [Fact]
+    // public async Task TestDockerInspect()
+    // {
+    //      var response = await Api.GetDockerImagesInspectAsync("ghcr.io/games-on-whales/wolf:stable");
+    //      _output.WriteLine(response.ToString());
+    // }
 
     #region SetupTestEnvironment
     // Lifetime of the Container should be the same as the Classes Object.

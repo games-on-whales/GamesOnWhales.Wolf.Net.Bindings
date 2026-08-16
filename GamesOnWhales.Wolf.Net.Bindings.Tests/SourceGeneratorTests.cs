@@ -1,16 +1,14 @@
-using System.Collections.Immutable;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using OpenApiGenerator;
 using Xunit;
-using Xunit.Internal;
 
 namespace GamesOnWhales.Wolf.Net.Bindings.Tests;
 
 public class SourceGeneratorTests
 {
-    private static Compilation CreateCompilation(string source)
+    private static CSharpCompilation CreateCompilation(string source)
         => CSharpCompilation.Create("compilation",
             [CSharpSyntaxTree.ParseText(source)],
             [MetadataReference.CreateFromFile(typeof(Binder).GetTypeInfo().Assembly.Location)],
