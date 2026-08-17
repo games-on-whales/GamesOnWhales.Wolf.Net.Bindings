@@ -16,7 +16,8 @@ internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDi
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        using RateLimitLease lease = await _limiter.AcquireAsync(
+        // TODO: Fix Ratelimiter causing 429 Errors before enabling again!
+        /*using RateLimitLease lease = await _limiter.AcquireAsync(
             permitCount: 1, cancellationToken);
 
         if (lease.IsAcquired)
@@ -34,7 +35,8 @@ internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDi
                     NumberFormatInfo.InvariantInfo));
         }
 
-        return response;
+        return response;*/
+        return await base.SendAsync(request, cancellationToken);
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
