@@ -6,6 +6,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamesOnWhales.Wolf.Net.Bind
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamesOnWhales.Wolf.Net.Bindings.Tests", "GamesOnWhales.Wolf.Net.Bindings.Tests\GamesOnWhales.Wolf.Net.Bindings.Tests.csproj", "{F25FD1FF-15FB-4CA6-BD7B-106A0D6091CD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFolder", "SolutionFolder", "{4E91CE19-CF54-498A-868F-A70FCBD4B130}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
