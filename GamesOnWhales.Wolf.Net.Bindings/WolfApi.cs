@@ -29,6 +29,8 @@ public partial class WolfApi : IWolfApi
         logger ??= NullLogger<WolfApi>.Instance;
         configuration ??= new ConfigurationBuilder().Build();
         
+        _logger = logger;
+        
         if (eventHandlers != null)
         {
             _sseHandlers = eventHandlers.ToDictionary(h => h.EventName, h => h);
@@ -56,6 +58,7 @@ public partial class WolfApi : IWolfApi
             _httpClient = new HttpClient(
                 handler: new ClientSideRateLimitedHandler(
                     limiter: new TokenBucketRateLimiter(options),
+                    logger: _logger,
                     httpMessageHandler: new SocketsHttpHandler
                     {
                         ConnectCallback = async (_, token) =>
@@ -64,11 +67,24 @@ public partial class WolfApi : IWolfApi
                             {
                                 throw new FileNotFoundException(socketPath);
                             }
-                            
-                            var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
-                            var endpoint = new UnixDomainSocketEndPoint(socketPath);
-                            await socket.ConnectAsync(endpoint, token);
-                            return new NetworkStream(socket, ownsSocket: true);
+
+                            var retry = 0;
+                            while (retry++ < 5)
+                            {
+                                try
+                                {
+                                    var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.IP);
+                                    var endpoint = new UnixDomainSocketEndPoint(socketPath);
+                                    await socket.ConnectAsync(endpoint, token);
+                                    return new NetworkStream(socket, ownsSocket: true);
+                                }
+                                catch (SocketException e)
+                                {
+                                    LogErrorWhileConnectingToSocketMsg(e.Message);
+                                    await Task.Delay(10, token);
+                                }
+                            }
+                            throw new IOException("Could not connect to socket");
                         }
                     }
                 )
@@ -79,6 +95,7 @@ public partial class WolfApi : IWolfApi
             _httpClient = new HttpClient(
                 handler: new ClientSideRateLimitedHandler(
                     limiter: new TokenBucketRateLimiter(options),
+                    logger: _logger,
                     httpMessageHandler: new HttpClientHandler()
                 )
             );
@@ -88,9 +105,10 @@ public partial class WolfApi : IWolfApi
         {
             BaseUrl = BaseUrl
         };
-        
-        _logger = logger;
 
         ProfilesUpdated += (_, profiles) => OnProfilesUpdatedEvent(profiles);
     }
+
+    [LoggerMessage(LogLevel.Warning, "Error while connecting to socket: {msg}")]
+    partial void LogErrorWhileConnectingToSocketMsg(string msg);
 }

@@ -1,50 +1,38 @@
+using Microsoft.Extensions.Logging;
+
 namespace GamesOnWhales.Components;
 
 using System.Globalization;
 using System.Net;
 using System.Threading.RateLimiting;
 
-internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDisposable
+internal sealed class ClientSideRateLimitedHandler(RateLimiter limiter, ILogger logger, HttpMessageHandler httpMessageHandler)
+    : DelegatingHandler(httpMessageHandler), IAsyncDisposable
 {
-    private readonly RateLimiter _limiter;
-
-    public ClientSideRateLimitedHandler(RateLimiter limiter, HttpMessageHandler httpMessageHandler) : base(httpMessageHandler)
-    {
-        _limiter = limiter;
-    }
-
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        // TODO: Fix Ratelimiter causing 429 Errors before enabling again!
-        /*using RateLimitLease lease = await _limiter.AcquireAsync(
-            permitCount: 1, cancellationToken);
+        using var lease = await limiter.AcquireAsync(permitCount: 1, cancellationToken);
 
-        if (lease.IsAcquired)
+        var retry = 0;
+        while (retry++ < 5)
         {
-            return await base.SendAsync(request, cancellationToken);
+            try
+            {
+                var response = await base.SendAsync(request, cancellationToken);
+                return response;
+            }
+            catch (HttpRequestException e)
+            {
+                logger.LogWarning("Could not send request, retrying...");
+            }
         }
-
-        var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
-        if (lease.TryGetMetadata(
-                MetadataName.RetryAfter, out TimeSpan retryAfter))
-        {
-            response.Headers.Add(
-                "Retry-After",
-                ((int)retryAfter.TotalSeconds).ToString(
-                    NumberFormatInfo.InvariantInfo));
-        }
-
-        return response;*/
-        
-        using var lease = await _limiter.AcquireAsync(permitCount: 1, cancellationToken);
-        
-        return await base.SendAsync(request, cancellationToken);
+        throw new InvalidOperationException("Could not Send the request");
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     { 
-        await _limiter.DisposeAsync().ConfigureAwait(false);
+        await limiter.DisposeAsync().ConfigureAwait(false);
 
         Dispose(disposing: false);
     }
@@ -55,7 +43,7 @@ internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDi
 
         if (disposing)
         {
-            _limiter.Dispose();
+            limiter.Dispose();
         }
     }
 }
