@@ -37,12 +37,14 @@ public partial class WolfApi : IWolfApi
         
         var socketPath = configuration.GetValue<string?>("SOCKET_PATH") ?? SocketPath;
         BaseUrl = configuration.GetValue<string?>("BASE_ADDRESS") ?? BaseUrl;
+        var tokenLimit = configuration.GetValue<int?>("WOLF_API_TOKEN_LIMIT") ?? 10;
+        var tokenPerInterval = configuration.GetValue<int?>("WOLF_API_TOKEN_PER_INTERVAL") ?? 10;
         
         var options = new TokenBucketRateLimiterOptions
         {
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            TokenLimit = 10,
-            TokensPerPeriod = 5,
+            TokenLimit = tokenLimit,
+            TokensPerPeriod = tokenPerInterval,
             QueueLimit = 1000, 
             ReplenishmentPeriod = TimeSpan.FromMilliseconds(100), 
             AutoReplenishment = true
