@@ -18,16 +18,10 @@ public partial class WolfApi : IHostedService
                 var stream = await _httpClient.GetStreamAsync($"{BaseUrl}api/v1/events", stoppingToken);
                 var eventType = string.Empty;
 
+                _logger.LogInformation("SSE read started");
                 await foreach (var item in SseParser.Create(stream).EnumerateAsync(stoppingToken))
                 {
-                    if (item.Data == ":keepalive") continue;
-
-                    if (item.Data.StartsWith("event:"))
-                        eventType = item.Data["event: ".Length..];
-
-                    if (!item.Data.StartsWith("data:")) continue;
-
-                    await FilterApiEvents(eventType, item.Data["data: ".Length..]);
+                    await FilterApiEvents(item.EventType, item.Data);
                 }
 
                 _logger.LogError("Lost connection to the Wolf API SSE. End of Stream.");
