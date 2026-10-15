@@ -36,6 +36,9 @@ internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDi
         }
 
         return response;*/
+        
+        using var lease = await _limiter.AcquireAsync(permitCount: 1, cancellationToken);
+        
         return await base.SendAsync(request, cancellationToken);
     }
 
@@ -44,7 +47,6 @@ internal sealed class ClientSideRateLimitedHandler : DelegatingHandler, IAsyncDi
         await _limiter.DisposeAsync().ConfigureAwait(false);
 
         Dispose(disposing: false);
-        GC.SuppressFinalize(this);
     }
 
     protected override void Dispose(bool disposing)

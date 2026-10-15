@@ -40,11 +40,11 @@ public partial class WolfApi : IWolfApi
         
         var options = new TokenBucketRateLimiterOptions
         {
-            TokenLimit = 100, 
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-            QueueLimit = 100, 
-            ReplenishmentPeriod = TimeSpan.FromMilliseconds(1), 
-            TokensPerPeriod = 5, 
+            TokenLimit = 10,
+            TokensPerPeriod = 5,
+            QueueLimit = 1000, 
+            ReplenishmentPeriod = TimeSpan.FromMilliseconds(100), 
             AutoReplenishment = true
         };
         
